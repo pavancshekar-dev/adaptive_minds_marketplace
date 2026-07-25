@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../src/lib/load-env";
 import yaml from "js-yaml";
 import { prisma } from "../src/lib/prisma";
 import { fetchRepoTree, fetchRepoJsonFile, fetchRepoTextFile, type LoraAdapterConfig } from "../src/lib/hf";

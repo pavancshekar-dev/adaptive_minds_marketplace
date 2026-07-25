@@ -9,8 +9,11 @@ plus a form that publishes new adapters straight from the browser.
 
 - **Next.js (App Router) + TypeScript + Tailwind v4**, hand-rolled UI (no component library) —
   see the design tokens in `src/app/globals.css`.
-- **SQLite via Prisma** (`prisma/schema.prisma`) is the searchable registry. It is *not* file
-  storage — every row just points at a Hugging Face repo + path.
+- **Postgres (Neon, via Vercel's managed integration) + Prisma** (`prisma/schema.prisma`) is the
+  searchable registry. It is *not* file storage — every row just points at a Hugging Face repo +
+  path. The Prisma client connects through `@prisma/adapter-neon`'s HTTP driver
+  (`PrismaNeonHttp`), which works identically in Vercel serverless functions and locally — no
+  native module, no connection pooling to manage yourself.
 - **`scripts/seed-from-hf.ts`** crawls `pavan01729/adaptive-minds-loras` (the existing collection
   of 150+ adapters) via the public HF Hub API and populates the registry. Re-run it any time to
   pick up new adapters pushed directly to that repo.
@@ -31,18 +34,23 @@ path with no `#`, `?`, or `%` in it. It was originally scaffolded under
 
 ## Getting started
 
+This project is linked to a Vercel project (`codeit1792s-projects/adaptive_minds_marketplace`)
+with a Neon Postgres database provisioned through Vercel's Storage integration.
+
 ```bash
 npm install
-cp .env.example .env   # if you don't already have one — sets DATABASE_URL
-npx prisma migrate dev # creates dev.db
-npm run seed           # crawls the HF collection and populates the catalog
-npm run dev            # http://localhost:3000
+vercel link          # if not already linked in this checkout
+vercel env pull .env.local --yes   # pulls DATABASE_URL / DATABASE_URL_UNPOOLED from Neon
+npm run seed          # crawls the HF collection and populates the catalog (idempotent upsert)
+npm run dev           # http://localhost:3000
 ```
 
-`npm run dev` and `npm run build` pass `--webpack` explicitly — this app does not currently work
-under Turbopack because of a couple of native-module (`better-sqlite3`) quirks encountered during
-development; webpack was verified to work end to end (dev, lint, typecheck, production build,
-production start).
+Without Vercel access, point `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, used
+only for `prisma migrate`) at any Postgres instance — see `.env.example`.
+
+`npm run dev` and `npm run build` pass `--webpack` explicitly — Turbopack broke on a `#` in an
+ancestor directory path during development (see below); webpack was verified end to end (dev,
+lint, typecheck, production build, production start, and deployed on Vercel).
 
 ## Project layout
 
@@ -65,5 +73,8 @@ src/app/api/                REST endpoints backing the above
   with a real, publicly-readable HF repo can register an entry. Fine for a small trusted
   audience; would need real accounts before opening this up broadly.
 - No live inference/playground — "pull" means "here's the exact command," not an in-browser demo.
-- Registry is SQLite on local disk. Move to a hosted Postgres (Prisma supports it without schema
-  changes beyond swapping the driver adapter) before deploying this anywhere multi-instance.
+- The seed crawls *everything* in the collection repo, including smoke tests
+  (`qwen35-smoke_hf`), broken/abandoned runs (`…-hacked`, `…-stuck`), and persona toys
+  (`elon_musk`, `shakespeare`) — all currently shown as **official** listings. Worth curating the
+  HF repo (or adding an exclude list to `scripts/seed-from-hf.ts`) before pointing anyone else at
+  this.

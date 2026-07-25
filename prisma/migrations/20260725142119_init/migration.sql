@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "Adapter" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -13,13 +13,15 @@ CREATE TABLE "Adapter" (
     "hfPath" TEXT NOT NULL,
     "rank" INTEGER,
     "loraAlpha" INTEGER,
-    "loraDropout" REAL,
+    "loraDropout" DOUBLE PRECISION,
     "targetModules" TEXT,
     "sizeBytes" BIGINT,
     "source" TEXT NOT NULL DEFAULT 'community',
     "uploaderUsername" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Adapter_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex

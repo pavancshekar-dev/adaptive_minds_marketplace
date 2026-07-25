@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@huggingface/hub": "^2.13.3",
-    "@prisma/adapter-better-sqlite3": "^7.9.0",
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "^7.9.0",
     "@prisma/client": "^7.9.0",
-    "better-sqlite3": "^13.0.1",
     "clsx": "^2.1.1",
     "js-yaml": "^5.2.2",
     "lucide-react": "^1.26.0",
