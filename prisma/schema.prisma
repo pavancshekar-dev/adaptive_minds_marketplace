@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// A LoRA adapter registered in the marketplace. Files always live on the Hugging
+// Face Hub (hfRepoId/hfPath) — this table is only the searchable index over them.
+model Adapter {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+
+  name        String
+  description String
+  systemPrompt String?
+
+  baseModel   String   // e.g. "Qwen2.5-7B-Instruct"
+  domain      String   // primary facet used for filtering, e.g. "legal", "medical"
+  tags        String   // JSON-encoded string[] (sqlite has no native array type)
+  method      String?  // e.g. "grpo", "sft", "dpo"
+
+  hfRepoId    String   // e.g. "pavan01729/adaptive-minds-loras"
+  hfPath      String   // subpath within the repo, "" if adapter is at repo root
+
+  rank        Int?
+  loraAlpha   Int?
+  loraDropout Float?
+  targetModules String? // JSON-encoded string[]
+
+  sizeBytes   BigInt?
+
+  source      String   @default("community") // "official" | "community"
+  uploaderUsername String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([baseModel])
+  @@index([domain])
+  @@index([source])
+}
